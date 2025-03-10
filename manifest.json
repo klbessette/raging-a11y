@@ -1,7 +1,7 @@
 {
   "name": "Raging A11y",
   "version": "1.0",
-  "description": "Accessibility testing tool using axe-core",
+  "description": "Accessibility testing tool.",
   "manifest_version": 3,
   "devtools_page": "devtools.html",
   "permissions": ["activeTab", "scripting"],
