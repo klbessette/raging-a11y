@@ -40,6 +40,7 @@ console.log("[Raging A11y] Panel script loaded");
 // DOM elements
 const scanButton = document.getElementById("scan-button");
 const configButton = document.getElementById("config-button");
+const exportButton = document.getElementById("export-button");
 const configPanel = document.getElementById("config-panel");
 const selectAllButton = document.getElementById("select-all-standards");
 const clearAllButton = document.getElementById("clear-all-standards");
@@ -63,6 +64,9 @@ function initEventListeners() {
   console.log("[Raging A11y] Initializing event listeners");
   // Scan button click event
   scanButton.addEventListener("click", runAccessibilityScan);
+
+  // Export button click event
+  exportButton.addEventListener("click", exportToCSV);
 
   // Configuration button click event
   configButton.addEventListener("click", () => {
@@ -1259,3 +1263,107 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("[Raging A11y] DOM content loaded");
   initPanel();
 });
+
+// Export results to CSV
+function exportToCSV() {
+  console.log("[Raging A11y] Exporting results to CSV");
+  
+  // Check if we have results to export
+  if (!axeResults) {
+    console.log("[Raging A11y] No results to export");
+    alert("Please run a scan first before exporting results.");
+    return;
+  }
+  
+  // Prepare CSV header
+  const csvHeader = [
+    "Type",
+    "Severity",
+    "Rule ID",
+    "Impact",
+    "Description",
+    "Help",
+    "Help URL",
+    "HTML",
+    "Target",
+    "Path"
+  ].join(",");
+  
+  const csvRows = [];
+  
+  // Process violations
+  Object.entries(issuesByType).forEach(([severity, issues]) => {
+    issues.forEach(issue => {
+      issue.nodes.forEach(node => {
+        const html = node.html.replace(/"/g, '""'); // Escape quotes for CSV
+        const target = node.target.join(";").replace(/"/g, '""');
+        const path = (node.xpath || node.target[0]).replace(/"/g, '""');
+        
+        csvRows.push([
+          "Violation",
+          severity,
+          issue.id,
+          issue.impact,
+          issue.description.replace(/"/g, '""'),
+          issue.help.replace(/"/g, '""'),
+          issue.helpUrl,
+          `"${html}"`,
+          `"${target}"`,
+          `"${path}"`
+        ].join(","));
+      });
+    });
+  });
+  
+  // Process incomplete
+  Object.entries(incompleteByType).forEach(([severity, issues]) => {
+    issues.forEach(issue => {
+      issue.nodes.forEach(node => {
+        const html = node.html.replace(/"/g, '""'); // Escape quotes for CSV
+        const target = node.target.join(";").replace(/"/g, '""');
+        const path = (node.xpath || node.target[0]).replace(/"/g, '""');
+        
+        csvRows.push([
+          "Incomplete",
+          severity,
+          issue.id,
+          issue.impact,
+          issue.description.replace(/"/g, '""'),
+          issue.help.replace(/"/g, '""'),
+          issue.helpUrl,
+          `"${html}"`,
+          `"${target}"`,
+          `"${path}"`
+        ].join(","));
+      });
+    });
+  });
+  
+  // Combine header and rows
+  const csvContent = [csvHeader, ...csvRows].join("\n");
+  
+  // Create a Blob with the CSV content
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  
+  // Create a download link and trigger the download
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  
+  // Get current date and time for filename
+  const now = new Date();
+  const timestamp = now.toISOString().replace(/[:.]/g, "-").replace("T", "_").split("Z")[0];
+  const filename = `accessibility-report-${timestamp}.csv`;
+  
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  link.style.display = "none";
+  
+  document.body.appendChild(link);
+  link.click();
+  
+  // Clean up
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  console.log("[Raging A11y] CSV export completed");
+}

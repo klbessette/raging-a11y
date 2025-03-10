@@ -11,6 +11,7 @@ A set of a11y testing tools for the web.
 - Summarizes findings grouped by severity.
 - Drill down to issues and offending elements.
 - Identify offending elements on the page.
+- Export violations and incomplete tests to CSV format.
 
 ## Installation
 
@@ -35,6 +36,7 @@ _Coming soon_
 5. Click on a severity count to view the specific issues
 6. Click on an issue to view the affected elements
 7. Click on an element to highlight it on the page
+8. Click the "Export CSV" button to download a CSV report of all violations and incomplete tests
 
 ## Development
 
