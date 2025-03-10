@@ -2,7 +2,7 @@
 console.log("[Raging A11y] DevTools script loaded");
 
 chrome.devtools.panels.create(
-  "A11y", // Panel title
+  "Raging A11y", // Panel title
   "images/icon16.png", // Panel icon
   "panel.html", // Panel HTML page
   function (panel) {

@@ -29,7 +29,7 @@ _Coming soon_
 ## Usage
 
 1. Open Chrome DevTools (F12 or Right-click > Inspect)
-2. Navigate to the "A11y" panel in DevTools
+2. Navigate to the "Raging A11y" panel in DevTools
 3. Click the "Scan" button to analyze the current page
 4. Review the summary of findings by severity
 5. Click on a severity count to view the specific issues

@@ -1138,9 +1138,9 @@ function highlightElement(target) {
         "\\'"
       )}');
       // Remove previous highlights
-      const previousHighlights = document.querySelectorAll('.a11y-devtools-highlight');
+      const previousHighlights = document.querySelectorAll('.raging-a11y-highlight');
       previousHighlights.forEach(el => {
-        el.classList.remove('a11y-devtools-highlight');
+        el.classList.remove('raging-a11y-highlight');
         el.style.outline = '';
         el.style.outlineOffset = '';
       });
@@ -1153,8 +1153,8 @@ function highlightElement(target) {
         )}');
         if (element) {
           console.log('[Raging A11y - Page Context] Element found and highlighted');
-          element.classList.add('a11y-devtools-highlight');
-          element.style.outline = '2px solid #4285f4';
+          element.classList.add('raging-a11y-highlight');
+          element.style.outline = '10px dashed #4285f4';
           element.style.outlineOffset = '2px';
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return true;

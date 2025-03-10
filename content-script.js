@@ -23,7 +23,7 @@ function highlightElement(selector) {
 
   // Remove previous highlights
   const previousHighlights = document.querySelectorAll(
-    ".a11y-devtools-highlight"
+    ".raging-a11y-highlight"
   );
   console.log(
     "[Raging A11y] Removing previous highlights:",
@@ -31,7 +31,7 @@ function highlightElement(selector) {
   );
 
   previousHighlights.forEach((el) => {
-    el.classList.remove("a11y-devtools-highlight");
+    el.classList.remove("raging-a11y-highlight");
     el.style.outline = "";
     el.style.outlineOffset = "";
   });
@@ -41,9 +41,9 @@ function highlightElement(selector) {
     const element = document.querySelector(selector);
     if (element) {
       console.log("[Raging A11y] Element found, applying highlight");
-      element.classList.add("a11y-devtools-highlight");
-      element.style.outline = "4px solid #4285f4";
-      element.style.outlineOffset = "4px";
+      element.classList.add("raging-a11y-highlight");
+      element.style.outline = "10px dashed #4285f4";
+      element.style.outlineOffset = "-1em";
       element.scrollIntoView({ behavior: "smooth", block: "center" });
       return true;
     } else {
