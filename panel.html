@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Raging A11y</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Raging A11y</h1>
+        <div class="header-buttons">
+          <button
+            id="config-button"
+            class="icon-button"
+            title="Configure WCAG Standards"
+          >
+            ⚙️
+          </button>
+          <button id="scan-button">Scan</button>
+        </div>
+      </header>
+
+      <div id="config-panel" class="config-panel hidden">
+        <div class="config-header">
+          <h2>WCAG Standards</h2>
+          <div class="config-actions">
+            <button id="select-all-standards" class="text-button">
+              Select All
+            </button>
+            <button id="clear-all-standards" class="text-button">
+              Clear All
+            </button>
+          </div>
+        </div>
+        <div class="standards-grid">
+          <label class="standard-item">
+            <input type="checkbox" value="wcag2a" checked /> WCAG 2.0 Level A
+          </label>
+          <label class="standard-item">
+            <input type="checkbox" value="wcag2aa" checked /> WCAG 2.0 Level AA
+          </label>
+          <label class="standard-item">
+            <input type="checkbox" value="wcag21a" checked /> WCAG 2.1 Level A
+          </label>
+          <label class="standard-item">
+            <input type="checkbox" value="wcag21aa" checked /> WCAG 2.1 Level AA
+          </label>
+          <label class="standard-item">
+            <input type="checkbox" value="wcag22a" checked /> WCAG 2.2 Level A
+          </label>
+          <label class="standard-item">
+            <input type="checkbox" value="wcag22aa" checked /> WCAG 2.2 Level AA
+          </label>
+        </div>
+      </div>
+
+      <div id="active-standards" class="active-standards hidden">
+        <h3>Active Standards:</h3>
+        <div class="standards-tags"></div>
+      </div>
+
+      <div class="tabs-container">
+        <div class="tabs">
+          <button class="tab-button active" data-tab="violations">
+            Violations
+          </button>
+          <button class="tab-button" data-tab="incomplete">Incomplete</button>
+          <button class="tab-button" data-tab="passes">Passes</button>
+        </div>
+      </div>
+
+      <div class="tab-content active" id="violations-tab">
+        <div class="summary-container">
+          <h2>Violations Summary</h2>
+          <div id="summary" class="summary">
+            <div class="severity-item" data-severity="critical">
+              <span class="severity-label">Critical:</span>
+              <span class="severity-count" id="critical-count">0</span>
+            </div>
+            <div class="severity-item" data-severity="serious">
+              <span class="severity-label">Serious:</span>
+              <span class="severity-count" id="serious-count">0</span>
+            </div>
+            <div class="severity-item" data-severity="moderate">
+              <span class="severity-label">Moderate:</span>
+              <span class="severity-count" id="moderate-count">0</span>
+            </div>
+            <div class="severity-item" data-severity="minor">
+              <span class="severity-label">Minor:</span>
+              <span class="severity-count" id="minor-count">0</span>
+            </div>
+            <div class="severity-item" data-severity="none">
+              <span class="severity-label">None:</span>
+              <span class="severity-count" id="none-count">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="results-container">
+          <div class="issues-panel">
+            <h2>Issues</h2>
+            <div id="issues-list" class="issues-list"></div>
+          </div>
+
+          <div class="elements-panel">
+            <h2>Elements</h2>
+            <div id="elements-list" class="elements-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="incomplete-tab">
+        <div class="summary-container">
+          <h2>Incomplete Summary</h2>
+          <div id="incomplete-summary" class="summary">
+            <div
+              class="severity-item"
+              data-severity="critical"
+              data-type="incomplete"
+            >
+              <span class="severity-label">Critical:</span>
+              <span class="severity-count" id="incomplete-critical-count"
+                >0</span
+              >
+            </div>
+            <div
+              class="severity-item"
+              data-severity="serious"
+              data-type="incomplete"
+            >
+              <span class="severity-label">Serious:</span>
+              <span class="severity-count" id="incomplete-serious-count"
+                >0</span
+              >
+            </div>
+            <div
+              class="severity-item"
+              data-severity="moderate"
+              data-type="incomplete"
+            >
+              <span class="severity-label">Moderate:</span>
+              <span class="severity-count" id="incomplete-moderate-count"
+                >0</span
+              >
+            </div>
+            <div
+              class="severity-item"
+              data-severity="minor"
+              data-type="incomplete"
+            >
+              <span class="severity-label">Minor:</span>
+              <span class="severity-count" id="incomplete-minor-count">0</span>
+            </div>
+            <div
+              class="severity-item"
+              data-severity="none"
+              data-type="incomplete"
+            >
+              <span class="severity-label">None:</span>
+              <span class="severity-count" id="incomplete-none-count">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="results-container">
+          <div class="issues-panel">
+            <h2>Issues</h2>
+            <div id="incomplete-issues-list" class="issues-list"></div>
+          </div>
+
+          <div class="elements-panel">
+            <h2>Elements</h2>
+            <div id="incomplete-elements-list" class="elements-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="passes-tab">
+        <div class="summary-container">
+          <h2>Passes Summary</h2>
+          <div id="passes-summary" class="summary">
+            <div
+              class="severity-item"
+              data-severity="critical"
+              data-type="passes"
+            >
+              <span class="severity-label">Critical:</span>
+              <span class="severity-count" id="passes-critical-count">0</span>
+            </div>
+            <div
+              class="severity-item"
+              data-severity="serious"
+              data-type="passes"
+            >
+              <span class="severity-label">Serious:</span>
+              <span class="severity-count" id="passes-serious-count">0</span>
+            </div>
+            <div
+              class="severity-item"
+              data-severity="moderate"
+              data-type="passes"
+            >
+              <span class="severity-label">Moderate:</span>
+              <span class="severity-count" id="passes-moderate-count">0</span>
+            </div>
+            <div class="severity-item" data-severity="minor" data-type="passes">
+              <span class="severity-label">Minor:</span>
+              <span class="severity-count" id="passes-minor-count">0</span>
+            </div>
+            <div class="severity-item" data-severity="none" data-type="passes">
+              <span class="severity-label">None:</span>
+              <span class="severity-count" id="passes-none-count">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="results-container">
+          <div class="issues-panel">
+            <h2>Rules</h2>
+            <div id="passes-issues-list" class="issues-list"></div>
+          </div>
+
+          <div class="elements-panel">
+            <h2>Elements</h2>
+            <div id="passes-elements-list" class="elements-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Scanning page for accessibility issues...</p>
+      </div>
+    </div>
+
+    <script src="panel.js"></script>
+  </body>
+</html>
