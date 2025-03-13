@@ -1277,6 +1277,7 @@ function exportToCSV() {
   
   // Prepare CSV header
   const csvHeader = [
+    "Issue ID",
     "Type",
     "Severity",
     "Rule ID",
@@ -1294,12 +1295,15 @@ function exportToCSV() {
   // Process violations
   Object.entries(issuesByType).forEach(([severity, issues]) => {
     issues.forEach(issue => {
-      issue.nodes.forEach(node => {
+      issue.nodes.forEach((node, nodeIndex) => {
         const html = node.html.replace(/"/g, '""'); // Escape quotes for CSV
         const target = node.target.join(";").replace(/"/g, '""');
         const path = (node.xpath || node.target[0]).replace(/"/g, '""');
+        // Create a unique issue ID by combining rule ID and node index
+        const issueId = `${issue.id}-${nodeIndex}`;
         
         csvRows.push([
+          issueId,
           "Violation",
           severity,
           issue.id,
@@ -1318,12 +1322,15 @@ function exportToCSV() {
   // Process incomplete
   Object.entries(incompleteByType).forEach(([severity, issues]) => {
     issues.forEach(issue => {
-      issue.nodes.forEach(node => {
+      issue.nodes.forEach((node, nodeIndex) => {
         const html = node.html.replace(/"/g, '""'); // Escape quotes for CSV
         const target = node.target.join(";").replace(/"/g, '""');
         const path = (node.xpath || node.target[0]).replace(/"/g, '""');
+        // Create a unique issue ID by combining rule ID and node index
+        const issueId = `${issue.id}-${nodeIndex}`;
         
         csvRows.push([
+          issueId,
           "Incomplete",
           severity,
           issue.id,
