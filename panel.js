@@ -60,6 +60,10 @@ const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
 const showAltTextBtn = document.getElementById("show-alt-text-btn");
 const hideAltTextBtn = document.getElementById("hide-alt-text-btn");
+const showHeadingOrderBtn = document.getElementById("show-heading-order-btn");
+const hideHeadingOrderBtn = document.getElementById("hide-heading-order-btn");
+const showTabOrderBtn = document.getElementById("show-tab-order-btn");
+const hideTabOrderBtn = document.getElementById("hide-tab-order-btn");
 
 // Initialize event listeners
 function initEventListeners() {
@@ -145,7 +149,26 @@ function initEventListeners() {
       chrome.devtools.inspectedWindow.eval('(' + hideAllAltTextInPage.toString() + ')()');
     });
   }
-
+  if (showHeadingOrderBtn) {
+    showHeadingOrderBtn.addEventListener('click', () => {
+      chrome.devtools.inspectedWindow.eval('(' + showHeadingOrderInPage.toString() + ')()');
+    });
+  }
+  if (hideHeadingOrderBtn) {
+    hideHeadingOrderBtn.addEventListener('click', () => {
+      chrome.devtools.inspectedWindow.eval('(' + hideHeadingOrderInPage.toString() + ')()');
+    });
+  }
+  if (showTabOrderBtn) {
+    showTabOrderBtn.addEventListener('click', () => {
+      chrome.devtools.inspectedWindow.eval('(' + showTabOrderInPage.toString() + ')()');
+    });
+  }
+  if (hideTabOrderBtn) {
+    hideTabOrderBtn.addEventListener('click', () => {
+      chrome.devtools.inspectedWindow.eval('(' + hideTabOrderInPage.toString() + ')()');
+    });
+  }
 }
 
 // Switch between tabs
@@ -1459,4 +1482,140 @@ function hideAllAltTextInPage() {
     }
     overlay.remove();
   });
+}
+
+function showHeadingOrderInPage() {
+  // Remove any existing overlays first
+  document.querySelectorAll('.heading-order-overlay').forEach(el => el.remove());
+
+  const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+  let prevLevel = 0;
+  let skipped = false;
+  let h1Count = 0;
+
+  // Check for missing H1
+  if (!headings.some(h => h.tagName === 'H1')) {
+    // Add a warning at the top of the page
+    const warning = document.createElement('div');
+    warning.className = 'heading-order-overlay';
+    warning.textContent = '⚠️ No <h1> found on this page!';
+    warning.style.position = 'fixed';
+    warning.style.top = '10px';
+    warning.style.left = '50%';
+    warning.style.transform = 'translateX(-50%)';
+    warning.style.background = '#FF4136';
+    warning.style.color = 'white';
+    warning.style.fontSize = '14px';
+    warning.style.padding = '6px 18px';
+    warning.style.borderRadius = '4px';
+    warning.style.zIndex = 10000;
+    warning.style.pointerEvents = 'none';
+    document.body.appendChild(warning);
+  }
+
+  // Count H1s
+  h1Count = headings.filter(h => h.tagName === 'H1').length;
+  const multipleH1 = h1Count > 1;
+
+  headings.forEach((heading, idx) => {
+    const level = Number(heading.tagName[1]);
+    let overlayColor = '#0074D9'; // normal
+    let warningText = '';
+
+    // Highlight multiple H1s
+    if (heading.tagName === 'H1' && multipleH1) {
+      overlayColor = '#FF4136';
+      warningText = '⚠️ Multiple <h1>';
+    }
+
+    // Highlight skipped heading levels
+    if (prevLevel && (level > prevLevel + 1)) {
+      overlayColor = '#FF851B';
+      warningText = `⚠️ Skipped from H${prevLevel} to H${level}`;
+      skipped = true;
+    }
+    prevLevel = level;
+
+    // Create overlay
+    const overlay = document.createElement('span');
+    overlay.className = 'heading-order-overlay';
+    overlay.textContent = `${heading.tagName}${warningText ? ' ' + warningText : ''}`;
+    overlay.style.display = 'inline-block';
+    overlay.style.verticalAlign = 'middle';
+    overlay.style.background = overlayColor;
+    overlay.style.color = 'white';
+    overlay.style.fontSize = '11px';
+    overlay.style.marginRight = '6px';
+    overlay.style.padding = '2px 6px';
+    overlay.style.borderRadius = '3px';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.fontWeight = 'bold';
+    overlay.style.lineHeight = '1.2';
+    overlay.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
+    overlay.style.position = 'relative';
+    overlay.style.top = '-2px';
+
+    // Insert overlay as the first child of the heading
+    heading.insertBefore(overlay, heading.firstChild);
+  });
+}
+
+function hideHeadingOrderInPage() {
+  document.querySelectorAll('.heading-order-overlay').forEach(el => el.remove());
+}
+
+function showTabOrderInPage() {
+  // Remove existing overlays
+  document.querySelectorAll('.tab-order-overlay').forEach(el => el.remove());
+
+  // Helper: Get all focusable elements in tab order
+  function getTabbableElements() {
+    return Array.from(document.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])'))
+      .filter(el => !el.disabled && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden');
+  }
+
+  // Sort elements by tabindex and DOM order
+  const tabbables = getTabbableElements()
+    .map(el => ({ el, tabindex: el.tabIndex }))
+    .sort((a, b) => {
+      // Positive tabindex first, ascending
+      if (a.tabindex > 0 && b.tabindex > 0) return a.tabindex - b.tabindex;
+      // Positive tabindex before 0
+      if (a.tabindex > 0) return -1;
+      if (b.tabindex > 0) return 1;
+      // Both 0: DOM order
+      return 0;
+    })
+    .map(obj => obj.el);
+
+  tabbables.forEach((el, idx) => {
+    const overlay = document.createElement('span');
+    overlay.className = 'tab-order-overlay';
+    overlay.textContent = idx + 1;
+    overlay.style.position = 'absolute';
+    overlay.style.background = '#2ECC40';
+    overlay.style.color = 'white';
+    overlay.style.fontSize = '13px';
+    overlay.style.fontWeight = 'bold';
+    overlay.style.borderRadius = '50%';
+    overlay.style.width = '22px';
+    overlay.style.height = '22px';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = 10000;
+    overlay.style.pointerEvents = 'none';
+    overlay.style.boxShadow = '0 1px 4px rgba(0,0,0,0.15)';
+
+    // Position overlay at top-left of element
+    const rect = el.getBoundingClientRect();
+    overlay.style.left = `${rect.left + window.scrollX - 12}px`;
+    overlay.style.top = `${rect.top + window.scrollY - 12}px`;
+
+    document.body.appendChild(overlay);
+  });
+}
+
+function hideTabOrderInPage() {
+  document.querySelectorAll('.tab-order-overlay').forEach(el => el.remove());
 }

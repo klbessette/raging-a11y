@@ -328,6 +328,10 @@ button:hover {
   background-color: #e3f2fd;
 }
 
+.tab-content.tools.active {
+  background-color: transparent;
+}
+
 .highlighted {
   outline: 2px solid #4285f4 !important;
   outline-offset: 2px !important;
@@ -478,3 +482,10 @@ button:hover {
   display: inline-block;
   flex-shrink: 0;
 }
+
+.tools-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
