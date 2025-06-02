@@ -58,6 +58,8 @@ const passesElementsList = document.getElementById("passes-elements-list");
 const severityItems = document.querySelectorAll(".severity-item");
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
+const showAltTextBtn = document.getElementById("show-alt-text-btn");
+const hideAltTextBtn = document.getElementById("hide-alt-text-btn");
 
 // Initialize event listeners
 function initEventListeners() {
@@ -132,6 +134,18 @@ function initEventListeners() {
     });
   });
   console.log("[Raging A11y] Event listeners initialized");
+
+  if (showAltTextBtn) {
+    showAltTextBtn.addEventListener('click', () => {
+      chrome.devtools.inspectedWindow.eval('(' + showAllAltTextInPage.toString() + ')()');
+    });
+  }
+  if (hideAltTextBtn) {
+    hideAltTextBtn.addEventListener('click', () => {
+      chrome.devtools.inspectedWindow.eval('(' + hideAllAltTextInPage.toString() + ')()');
+    });
+  }
+
 }
 
 // Switch between tabs
@@ -1400,4 +1414,49 @@ function exportToCSV() {
   URL.revokeObjectURL(url);
   
   console.log("[Raging A11y] CSV export completed");
+}
+
+
+function showAllAltTextInPage() {
+  const images = document.querySelectorAll('img');
+  images.forEach(img => {
+    // Avoid duplicating overlays
+    if (img.parentElement.querySelector('.alt-text-overlay')) return;
+
+    const alt = img.getAttribute('alt');
+    const overlay = document.createElement('span');
+    overlay.className = 'alt-text-overlay';
+    overlay.textContent = alt ? `alt="${alt}"` : 'No alt text';
+    overlay.style.position = 'absolute';
+    overlay.style.background = 'yellow';
+    overlay.style.color = 'black';
+    overlay.style.fontSize = '12px';
+    overlay.style.padding = '2px 4px';
+    overlay.style.zIndex = 10000;
+    overlay.style.left = '0px';
+    overlay.style.top = '0px';
+    overlay.style.pointerEvents = 'none';
+
+    // Store original parent position if needed
+    const parent = img.parentElement;
+    if (!parent.hasAttribute('data-original-position')) {
+      parent.setAttribute('data-original-position', parent.style.position || '');
+    }
+    if (getComputedStyle(parent).position === 'static') {
+      parent.style.position = 'relative';
+    }
+
+    parent.appendChild(overlay);
+  });
+}
+
+function hideAllAltTextInPage() {
+  document.querySelectorAll('.alt-text-overlay').forEach(overlay => {
+    const parent = overlay.parentElement;
+    if (parent && parent.hasAttribute('data-original-position')) {
+      parent.style.position = parent.getAttribute('data-original-position');
+      parent.removeAttribute('data-original-position');
+    }
+    overlay.remove();
+  });
 }
