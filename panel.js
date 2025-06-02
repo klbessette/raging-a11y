@@ -802,6 +802,15 @@ function showIssuesForSeverity(severity) {
     issueItem.appendChild(issueSeverity);
     issueItem.appendChild(issueHeader);
     issueItem.appendChild(issueDescription);
+    if (issue.helpUrl) {
+      const issueLink = document.createElement("a");
+      issueLink.className = "issue-link";
+      issueLink.href = issue.helpUrl;
+      issueLink.target = "_blank";
+      issueLink.rel = "noopener noreferrer";
+      issueLink.textContent = "More info";
+      issueItem.appendChild(issueLink);
+    }
 
     // Add click event to show elements
     issueItem.addEventListener("click", () => {
@@ -912,6 +921,15 @@ function showIncompleteIssuesForSeverity(severity) {
     issueItem.appendChild(issueSeverity);
     issueItem.appendChild(issueHeader);
     issueItem.appendChild(issueDescription);
+    if (issue.helpUrl) {
+      const issueLink = document.createElement("a");
+      issueLink.className = "issue-link";
+      issueLink.href = issue.helpUrl;
+      issueLink.target = "_blank";
+      issueLink.rel = "noopener noreferrer";
+      issueLink.textContent = "More info";
+      issueItem.appendChild(issueLink);
+    }
 
     // Add click event to show elements
     issueItem.addEventListener("click", () => {
@@ -1015,6 +1033,15 @@ function showPassesForSeverity(severity) {
     issueItem.appendChild(issueSeverity);
     issueItem.appendChild(issueHeader);
     issueItem.appendChild(issueDescription);
+    if (issue.helpUrl) {
+      const issueLink = document.createElement("a");
+      issueLink.className = "issue-link";
+      issueLink.href = issue.helpUrl;
+      issueLink.target = "_blank";
+      issueLink.rel = "noopener noreferrer";
+      issueLink.textContent = "More info";
+      issueItem.appendChild(issueLink);
+    }
 
     // Add click event to show elements
     issueItem.addEventListener("click", () => {
