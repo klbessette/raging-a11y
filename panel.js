@@ -1451,8 +1451,8 @@ function showAllAltTextInPage() {
     overlay.className = 'alt-text-overlay';
     overlay.textContent = alt ? `alt="${alt}"` : 'No alt text';
     overlay.style.position = 'absolute';
-    overlay.style.background = 'yellow';
-    overlay.style.color = 'black';
+    overlay.style.background = alt ? 'yellow' : 'red';
+    overlay.style.color = alt ? 'black' : 'white';
     overlay.style.fontSize = '12px';
     overlay.style.padding = '2px 4px';
     overlay.style.zIndex = 10000;
@@ -1565,57 +1565,69 @@ function hideHeadingOrderInPage() {
 }
 
 function showTabOrderInPage() {
-  // Remove existing overlays
-  document.querySelectorAll('.tab-order-overlay').forEach(el => el.remove());
+  (function() {
+    function runTabOrderOverlay() {
+      document.querySelectorAll('.tab-order-overlay').forEach(el => el.remove());
+      const tabbables = window.tabbable && typeof window.tabbable.tabbable === 'function'
+        ? window.tabbable.tabbable(document.body)
+        : []; 
+      tabbables.forEach((el, idx) => {
+        if (el.querySelector && el.querySelector('.tab-order-overlay')) return;
+        const overlay = document.createElement('span');
+        overlay.className = 'tab-order-overlay';
+        overlay.textContent = idx + 1;
+        overlay.style.position = 'absolute';
+        overlay.style.background = '#2ECC40';
+        overlay.style.color = 'white';
+        overlay.style.fontSize = '13px';
+        overlay.style.fontWeight = 'bold';
+        overlay.style.borderRadius = '50%';
+        overlay.style.width = '22px';
+        overlay.style.height = '22px';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = 10000;
+        overlay.style.pointerEvents = 'none';
+        overlay.style.boxShadow = '0 1px 4px rgba(0,0,0,0.15)';
+        overlay.style.left = '0px';
+        overlay.style.top = '0px';
+        if (!el.hasAttribute('data-original-position')) {
+          el.setAttribute('data-original-position', el.style.position || '');
+        }
+        if (getComputedStyle(el).position === 'static') {
+          el.style.position = 'relative';
+        }
+        el.appendChild(overlay);
+      });
+      console.log('[A11y Panel] Tabbable elements:', tabbables.map(el => ({
+        tag: el.tagName,
+        type: el.type,
+        id: el.id,
+        class: el.className
+      })));
+      console.log('[A11y Panel] Tab order overlays: found', tabbables.length, 'elements');
+    }
 
-  // Helper: Get all focusable elements in tab order
-  function getTabbableElements() {
-    return Array.from(document.querySelectorAll('a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])'))
-      .filter(el => !el.disabled && el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden');
-  }
-
-  // Sort elements by tabindex and DOM order
-  const tabbables = getTabbableElements()
-    .map(el => ({ el, tabindex: el.tabIndex }))
-    .sort((a, b) => {
-      // Positive tabindex first, ascending
-      if (a.tabindex > 0 && b.tabindex > 0) return a.tabindex - b.tabindex;
-      // Positive tabindex before 0
-      if (a.tabindex > 0) return -1;
-      if (b.tabindex > 0) return 1;
-      // Both 0: DOM order
-      return 0;
-    })
-    .map(obj => obj.el);
-
-  tabbables.forEach((el, idx) => {
-    const overlay = document.createElement('span');
-    overlay.className = 'tab-order-overlay';
-    overlay.textContent = idx + 1;
-    overlay.style.position = 'absolute';
-    overlay.style.background = '#2ECC40';
-    overlay.style.color = 'white';
-    overlay.style.fontSize = '13px';
-    overlay.style.fontWeight = 'bold';
-    overlay.style.borderRadius = '50%';
-    overlay.style.width = '22px';
-    overlay.style.height = '22px';
-    overlay.style.display = 'flex';
-    overlay.style.alignItems = 'center';
-    overlay.style.justifyContent = 'center';
-    overlay.style.zIndex = 10000;
-    overlay.style.pointerEvents = 'none';
-    overlay.style.boxShadow = '0 1px 4px rgba(0,0,0,0.15)';
-
-    // Position overlay at top-left of element
-    const rect = el.getBoundingClientRect();
-    overlay.style.left = `${rect.left + window.scrollX - 12}px`;
-    overlay.style.top = `${rect.top + window.scrollY - 12}px`;
-
-    document.body.appendChild(overlay);
-  });
+    if (!window.tabbable) {
+      // Inject tabbable from CDN
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/tabbable@6.2.0/dist/index.umd.min.js';
+      script.onload = runTabOrderOverlay;
+      document.head.appendChild(script);
+    } else {
+      runTabOrderOverlay();
+    }
+  })();
 }
 
 function hideTabOrderInPage() {
-  document.querySelectorAll('.tab-order-overlay').forEach(el => el.remove());
+  document.querySelectorAll('.tab-order-overlay').forEach(overlay => {
+    const parent = overlay.parentElement;
+    if (parent && parent.hasAttribute('data-original-position')) {
+      parent.style.position = parent.getAttribute('data-original-position');
+      parent.removeAttribute('data-original-position');
+    }
+    overlay.remove();
+  });
 }
