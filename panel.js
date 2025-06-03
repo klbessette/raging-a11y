@@ -65,6 +65,98 @@ const hideHeadingOrderBtn = document.getElementById("hide-heading-order-btn");
 const showTabOrderBtn = document.getElementById("show-tab-order-btn");
 const hideTabOrderBtn = document.getElementById("hide-tab-order-btn");
 
+// --- WCAG 2.2 Contrast Checker logic ---
+function hexToRgb(hex) {
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+  const num = parseInt(hex, 16);
+  return [num >> 16 & 255, num >> 8 & 255, num & 255];
+}
+function luminance([r, g, b]) {
+  const a = [r, g, b].map(v => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+}
+function contrastRatio(hex1, hex2) {
+  const lum1 = luminance(hexToRgb(hex1));
+  const lum2 = luminance(hexToRgb(hex2));
+  const brightest = Math.max(lum1, lum2);
+  const darkest = Math.min(lum1, lum2);
+  return ((brightest + 0.05) / (darkest + 0.05));
+}
+function wcagResult(ratio, size = 'normal') {
+  let aa = false, aaa = false;
+  if (size === 'normal') {
+    aa = ratio >= 4.5;
+    aaa = ratio >= 7;
+  } else {
+    aa = ratio >= 3;
+    aaa = ratio >= 4.5;
+  }
+  return { aa, aaa };
+}
+function syncColorInputs(colorInput, textInput) {
+  colorInput.addEventListener('input', () => {
+    textInput.value = colorInput.value;
+  });
+  textInput.addEventListener('input', () => {
+    let val = textInput.value;
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) colorInput.value = val;
+  });
+}
+const fgColor = document.getElementById('contrast-fg');
+const fgText = document.getElementById('contrast-fg-text');
+const bgColor = document.getElementById('contrast-bg');
+const bgText = document.getElementById('contrast-bg-text');
+const checkBtn = document.getElementById('contrast-check-btn');
+const resultDiv = document.getElementById('contrast-result');
+
+function getCheckedStandards() {
+  return Array.from(document.querySelectorAll('.standard-item input[type="checkbox"]:checked'))
+    .map(cb => cb.value);
+}
+const standardLabels = {
+  wcag2a: 'WCAG 2.0 A',
+  wcag2aa: 'WCAG 2.0 AA',
+  wcag21a: 'WCAG 2.1 A',
+  wcag21aa: 'WCAG 2.1 AA',
+  wcag22a: 'WCAG 2.2 A',
+  wcag22aa: 'WCAG 2.2 AA'
+};
+
+if (fgColor && fgText && bgColor && bgText && checkBtn && resultDiv) {
+  syncColorInputs(fgColor, fgText);
+  syncColorInputs(bgColor, bgText);
+  checkBtn.addEventListener('click', () => {
+    const fg = fgText.value;
+    const bg = bgText.value;
+    const checked = getCheckedStandards();
+    if (!/^#[0-9a-fA-F]{6}$/.test(fg) || !/^#[0-9a-fA-F]{6}$/.test(bg)) {
+      resultDiv.innerHTML = '<span style="color:red;">Please enter valid hex colors.</span>';
+      return;
+    }
+    if (checked.length === 0) {
+      resultDiv.innerHTML = '<span style="color:red;">Please select at least one WCAG standard.</span>';
+      return;
+    }
+    const ratio = contrastRatio(fg, bg);
+    const normal = wcagResult(ratio, 'normal');
+    const large = wcagResult(ratio, 'large');
+    resultDiv.innerHTML = `
+      <div style="margin-bottom:4px;">
+        <span style="background:${bg};color:${fg};padding:2px 8px;border-radius:3px;">Sample Text</span>
+      </div>
+      <strong>Contrast Ratio:</strong> ${ratio.toFixed(2)}:1<br>
+      <strong>AA</strong> (normal): <span style="color:${normal.aa ? 'green':'red'}">${normal.aa ? 'PASS':'FAIL'}</span><br>
+      <strong>AA</strong> (large): <span style="color:${large.aa ? 'green':'red'}">${large.aa ? 'PASS':'FAIL'}</span><br>
+      <strong>AAA</strong> (normal): <span style="color:${normal.aaa ? 'green':'red'}">${normal.aaa ? 'PASS':'FAIL'}</span><br>
+      <strong>AAA</strong> (large): <span style="color:${large.aaa ? 'green':'red'}">${large.aaa ? 'PASS':'FAIL'}</span>
+    `;
+  });
+}
+
 // Initialize event listeners
 function initEventListeners() {
   console.log("[Raging A11y] Initializing event listeners");

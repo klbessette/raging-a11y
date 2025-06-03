@@ -248,6 +248,23 @@
             <button id="show-tab-order-btn">Show Tab Order</button>
             <button id="hide-tab-order-btn">Hide Tab Order</button>
           </div>
+          <div id="contrast-checker" style="margin-top:20px;">
+            <h4>WCAG 2.2 Contrast Checker</h4>
+            <label>
+              Foreground Color:
+              <input type="color" id="contrast-fg" value="#222222" style="vertical-align:middle;">
+              <input type="text" id="contrast-fg-text" value="#222222" size="8" maxlength="7" style="vertical-align:middle;">
+            </label>
+            <br>
+            <label>
+              Background Color:
+              <input type="color" id="contrast-bg" value="#ffffff" style="vertical-align:middle;">
+              <input type="text" id="contrast-bg-text" value="#ffffff" size="8" maxlength="7" style="vertical-align:middle;">
+            </label>
+            <br>
+            <button id="contrast-check-btn" style="margin-top:8px;">Check Contrast</button>
+            <div id="contrast-result" style="margin-top:10px;"></div>
+          </div>
         </div>
       </div>
 
