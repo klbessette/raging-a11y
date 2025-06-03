@@ -64,8 +64,13 @@ const showHeadingOrderBtn = document.getElementById("show-heading-order-btn");
 const hideHeadingOrderBtn = document.getElementById("hide-heading-order-btn");
 const showTabOrderBtn = document.getElementById("show-tab-order-btn");
 const hideTabOrderBtn = document.getElementById("hide-tab-order-btn");
+const showFocusIndicatorsBtn = document.getElementById("show-focus-indicators-btn");
+const hideFocusIndicatorsBtn = document.getElementById("hide-focus-indicators-btn");
+const findGenericLinksBtn = document.getElementById("find-generic-links-btn");
+const clearGenericLinksBtn = document.getElementById("clear-generic-links-btn");
+const findAriaLabelIssuesBtn = document.getElementById("find-aria-label-issues-btn");
+const clearAriaLabelIssuesBtn = document.getElementById("clear-aria-label-issues-btn");
 
-// --- WCAG 2.2 Contrast Checker logic ---
 function hexToRgb(hex) {
   hex = hex.replace(/^#/, '');
   if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
@@ -257,8 +262,65 @@ function initEventListeners() {
     });
   }
   if (hideTabOrderBtn) {
-    hideTabOrderBtn.addEventListener('click', () => {
-      chrome.devtools.inspectedWindow.eval('(' + hideTabOrderInPage.toString() + ')()');
+    hideTabOrderBtn.addEventListener("click", () => {
+      chrome.devtools.inspectedWindow.eval(
+        `(${hideTabOrderInPage.toString()})();`,
+        { useContentScriptContext: true }
+      );
+    });
+  }
+
+  if (showFocusIndicatorsBtn) {
+    showFocusIndicatorsBtn.addEventListener("click", () => {
+      chrome.devtools.inspectedWindow.eval(
+        `(${showFocusIndicatorsInPage.toString()})();`,
+        { useContentScriptContext: true }
+      );
+    });
+  }
+
+  if (hideFocusIndicatorsBtn) {
+    hideFocusIndicatorsBtn.addEventListener("click", () => {
+      chrome.devtools.inspectedWindow.eval(
+        `(${hideFocusIndicatorsInPage.toString()})();`,
+        { useContentScriptContext: true }
+      );
+    });
+  }
+
+  if (findGenericLinksBtn) {
+    findGenericLinksBtn.addEventListener("click", () => {
+      chrome.devtools.inspectedWindow.eval(
+        `(${findGenericLinksInPage.toString()})();`,
+        { useContentScriptContext: true }
+      );
+    });
+  }
+
+  if (clearGenericLinksBtn) {
+    clearGenericLinksBtn.addEventListener("click", () => {
+      chrome.devtools.inspectedWindow.eval(
+        `(${clearGenericLinkHighlightsInPage.toString()})();`,
+        { useContentScriptContext: true }
+      );
+    });
+  }
+
+  if (findAriaLabelIssuesBtn) {
+    findAriaLabelIssuesBtn.addEventListener("click", () => {
+      chrome.devtools.inspectedWindow.eval(
+        `(${findAriaLabelIssuesInPage.toString()})();`,
+        { useContentScriptContext: true }
+      );
+    });
+  }
+
+  if (clearAriaLabelIssuesBtn) {
+    clearAriaLabelIssuesBtn.addEventListener("click", () => {
+      chrome.devtools.inspectedWindow.eval(
+        `(${clearAriaLabelIssuesHighlightsInPage.toString()})();`,
+        { useContentScriptContext: true }
+      );
     });
   }
 }
@@ -1722,4 +1784,308 @@ function hideTabOrderInPage() {
     }
     overlay.remove();
   });
+}
+
+function showFocusIndicatorsInPage() {
+  const FOCUS_STYLE_ID = 'cascade-focus-indicator-styles';
+  const FOCUS_CLASS_NAME = 'cascade-focus-highlight';
+
+  // Remove any existing styles first
+  const existingStyleElement = document.getElementById(FOCUS_STYLE_ID);
+  if (existingStyleElement) {
+    existingStyleElement.remove();
+  }
+  document.querySelectorAll('.' + FOCUS_CLASS_NAME).forEach(el => el.classList.remove(FOCUS_CLASS_NAME));
+
+  // Define the style
+  const style = document.createElement('style');
+  style.id = FOCUS_STYLE_ID;
+  style.textContent = `
+    .${FOCUS_CLASS_NAME}:not(:focus-visible) {
+      outline: 3px dashed #FF00FF !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 3px #FF00FF, 0 0 0 5px white !important; /* Ensure visibility on dark/light backgrounds */
+    }
+    /* If you want to also style the actual :focus-visible state, you can add it here */
+    /* .${FOCUS_CLASS_NAME}:focus-visible {
+      outline: 3px solid #00FFFF !important; 
+      outline-offset: 2px !important;
+    } */
+  `;
+  document.head.appendChild(style);
+
+  // Find all focusable elements
+  const focusableSelectors = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+    '[contenteditable="true"]:not([contenteditable="false"])'
+  ];
+
+  const elements = document.querySelectorAll(focusableSelectors.join(', '));
+  elements.forEach(el => {
+    // Check if the element is actually visible and not inert
+    if (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0) {
+      const computedStyle = window.getComputedStyle(el);
+      if (computedStyle.visibility !== 'hidden' && computedStyle.display !== 'none') {
+         // Check for inert attribute on self or ancestors
+        let inert = false;
+        let current = el;
+        while (current) {
+            if (current.hasAttribute('inert')) {
+                inert = true;
+                break;
+            }
+            current = current.parentElement;
+        }
+        if (!inert) {
+            el.classList.add(FOCUS_CLASS_NAME);
+        }
+      }
+    }
+  });
+  console.log('[A11y Panel] Applied focus indicators to', document.querySelectorAll('.' + FOCUS_CLASS_NAME).length, 'elements.');
+}
+
+function hideFocusIndicatorsInPage() {
+  const FOCUS_STYLE_ID = 'cascade-focus-indicator-styles';
+  const FOCUS_CLASS_NAME = 'cascade-focus-highlight';
+
+  const styleElement = document.getElementById(FOCUS_STYLE_ID);
+  if (styleElement) {
+    styleElement.remove();
+  }
+  document.querySelectorAll('.' + FOCUS_CLASS_NAME).forEach(el => {
+    el.classList.remove(FOCUS_CLASS_NAME);
+  });
+  console.log('[A11y Panel] Removed focus indicators.');
+}
+
+function findGenericLinksInPage() {
+  const GENERIC_LINK_STYLE_ID = 'cascade-generic-link-styles';
+  const GENERIC_LINK_CLASS_NAME = 'cascade-generic-link-highlight';
+
+  // Remove any existing highlights and styles first
+  document.querySelectorAll('.' + GENERIC_LINK_CLASS_NAME).forEach(el => {
+    el.classList.remove(GENERIC_LINK_CLASS_NAME);
+    if (el.dataset.originalTitle) {
+      el.title = el.dataset.originalTitle;
+      delete el.dataset.originalTitle;
+    } else {
+      el.removeAttribute('title');
+    }
+    const tooltip = el.querySelector('.cascade-generic-link-tooltip');
+    if (tooltip) tooltip.remove();
+  });
+  const existingStyleElement = document.getElementById(GENERIC_LINK_STYLE_ID);
+  if (existingStyleElement) {
+    existingStyleElement.remove();
+  }
+
+  // Define the style for highlights and tooltips
+  const style = document.createElement('style');
+  style.id = GENERIC_LINK_STYLE_ID;
+  style.textContent = `
+    .${GENERIC_LINK_CLASS_NAME} {
+      outline: 2px dashed orange !important;
+      outline-offset: 2px !important;
+      position: relative; /* For tooltip positioning */
+    }
+    .${GENERIC_LINK_CLASS_NAME} .cascade-generic-link-tooltip {
+      visibility: hidden;
+      width: max-content;
+      background-color: black;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 8px;
+      position: absolute;
+      z-index: 10001; /* Higher than other overlays */
+      bottom: 125%; /* Position above the element */
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .${GENERIC_LINK_CLASS_NAME}:hover .cascade-generic-link-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const genericPhrases = [
+    'click here', 'read more', 'learn more', 'more info', 'more', 'here', 'info', 'link', 'this link', 'this page', 'this website', 'go to', 'get more', 'find out more'
+  ];
+
+  const links = document.querySelectorAll('a');
+  let count = 0;
+  links.forEach(link => {
+    const linkText = (link.textContent || '').trim().toLowerCase();
+    const ariaLabel = (link.getAttribute('aria-label') || '').trim().toLowerCase();
+    const effectiveText = ariaLabel || linkText; // Prefer aria-label if it exists
+
+    if (genericPhrases.includes(effectiveText)) {
+      link.classList.add(GENERIC_LINK_CLASS_NAME);
+      
+      // Add a tooltip
+      const tooltip = document.createElement('span');
+      tooltip.className = 'cascade-generic-link-tooltip';
+      tooltip.textContent = 'Generic link text: "' + (link.textContent || '').trim() + '"';
+      link.appendChild(tooltip);
+      count++;
+    }
+  });
+
+  console.log(`[A11y Panel] Found ${count} generic links.`);
+}
+
+function clearGenericLinkHighlightsInPage() {
+  const GENERIC_LINK_STYLE_ID = 'cascade-generic-link-styles';
+  const GENERIC_LINK_CLASS_NAME = 'cascade-generic-link-highlight';
+
+  document.querySelectorAll('.' + GENERIC_LINK_CLASS_NAME).forEach(el => {
+    el.classList.remove(GENERIC_LINK_CLASS_NAME);
+    const tooltip = el.querySelector('.cascade-generic-link-tooltip');
+    if (tooltip) tooltip.remove();
+  });
+
+  const styleElement = document.getElementById(GENERIC_LINK_STYLE_ID);
+  if (styleElement) {
+    styleElement.remove();
+  }
+  console.log('[A11y Panel] Cleared generic link highlights.');
+}
+
+function findAriaLabelIssuesInPage() {
+  const ARIA_ISSUE_STYLE_ID = 'cascade-aria-issue-styles';
+  const ARIA_ISSUE_CLASS_NAME = 'cascade-aria-issue-highlight';
+  const ARIA_TOOLTIP_CLASS_NAME = 'cascade-aria-issue-tooltip';
+
+  // Clear previous highlights
+  document.querySelectorAll('.' + ARIA_ISSUE_CLASS_NAME).forEach(el => {
+    el.classList.remove(ARIA_ISSUE_CLASS_NAME);
+    const tooltip = el.querySelector('.' + ARIA_TOOLTIP_CLASS_NAME);
+    if (tooltip) tooltip.remove();
+  });
+  const existingStyleElement = document.getElementById(ARIA_ISSUE_STYLE_ID);
+  if (existingStyleElement) {
+    existingStyleElement.remove();
+  }
+
+  // Define styles
+  const style = document.createElement('style');
+  style.id = ARIA_ISSUE_STYLE_ID;
+  style.textContent = `
+    .${ARIA_ISSUE_CLASS_NAME} {
+      outline: 2px dashed purple !important;
+      outline-offset: 2px !important;
+      position: relative; 
+    }
+    .${ARIA_TOOLTIP_CLASS_NAME} {
+      visibility: hidden;
+      width: max-content;
+      max-width: 300px;
+      background-color: black;
+      color: #fff !important;
+      text-align: left;
+      border-radius: 6px;
+      padding: 5px 8px;
+      position: absolute;
+      z-index: 10002; /* Higher than generic link tooltip */
+      bottom: 125%; 
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 12px !important; 
+      line-height: 1.4;
+    }
+    .${ARIA_ISSUE_CLASS_NAME}:hover .${ARIA_TOOLTIP_CLASS_NAME} {
+      visibility: visible;
+      opacity: 1;
+    }
+  `;
+  document.head.appendChild(style);
+
+  const elementsWithAriaLabel = document.querySelectorAll('[aria-label]');
+  let issuesFound = 0;
+
+  // Roles that inherently support naming from author via aria-label
+  // (This list is not exhaustive but covers common interactive roles)
+  const interactiveRoles = [
+    'button', 'checkbox', 'link', 'menuitem', 'menuitemcheckbox', 'menuitemradio',
+    'option', 'radio', 'searchbox', 'slider', 'spinbutton', 'switch', 'tab', 'textbox', 'tooltip', 'treeitem'
+    // Landmark roles also support labels, but usually via aria-labelledby for regions
+  ];
+
+  // Elements that are generally static content unless they have an interactive role
+  const staticElementTags = ['p', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dt', 'dd', 'th', 'td', 'label', 'legend', 'output'];
+
+  elementsWithAriaLabel.forEach(el => {
+    const ariaLabelValue = (el.getAttribute('aria-label') || '').trim();
+    const textContentValue = (el.textContent || '').trim();
+    const role = (el.getAttribute('role') || '').toLowerCase();
+    const tagName = el.tagName.toLowerCase();
+    let issueMessage = '';
+
+    // 1. Check for redundant aria-label
+    if (ariaLabelValue.toLowerCase() === textContentValue.toLowerCase() && textContentValue !== '') {
+      issueMessage = 'Redundant aria-label: The aria-label content is the same as the visible text content.';
+    }
+
+    // 2. Check for aria-label on static content without an appropriate interactive role
+    if (staticElementTags.includes(tagName) && !role && ariaLabelValue !== '') {
+        // Further check: if it's an img or has a role that supports naming, it might be okay.
+        // This check is simplified; a more robust check would involve deeper role semantics.
+        if (!interactiveRoles.includes(role)) { // if no role, or a role not in our 'interactive' list
+             const currentMsg = issueMessage ? issueMessage + '\n' : '';
+             issueMessage = currentMsg + 'Potentially misused aria-label: aria-label used on a static element (' + tagName + ') without an interactive ARIA role.';
+        }
+    } else if (role && !interactiveRoles.includes(role) && staticElementTags.includes(tagName) && ariaLabelValue !== '') {
+        // Has a role, but that role isn't one we typically expect to be named by aria-label directly on a static tag
+        const currentMsg = issueMessage ? issueMessage + '\n' : '';
+        issueMessage = currentMsg + 'Potentially misused aria-label: aria-label used on element (' + tagName + ') with role "' + role + '" which may not be appropriate for direct naming if content is present.';
+    }
+
+
+    if (issueMessage) {
+      el.classList.add(ARIA_ISSUE_CLASS_NAME);
+      const tooltip = document.createElement('span');
+      tooltip.className = ARIA_TOOLTIP_CLASS_NAME;
+      tooltip.innerText = issueMessage; // Use innerText to preserve newlines in tooltip
+      el.appendChild(tooltip);
+      issuesFound++;
+    }
+  });
+
+  console.log(`[A11y Panel] Found ${issuesFound} potential ARIA label issues.`);
+}
+
+function clearAriaLabelIssuesHighlightsInPage() {
+  const ARIA_ISSUE_STYLE_ID = 'cascade-aria-issue-styles';
+  const ARIA_ISSUE_CLASS_NAME = 'cascade-aria-issue-highlight';
+  const ARIA_TOOLTIP_CLASS_NAME = 'cascade-aria-issue-tooltip';
+
+  // First, remove the highlight class from all relevant elements
+  document.querySelectorAll('.' + ARIA_ISSUE_CLASS_NAME).forEach(el => {
+    el.classList.remove(ARIA_ISSUE_CLASS_NAME);
+  });
+
+  // Then, find and remove all tooltip span elements directly
+  document.querySelectorAll('.' + ARIA_TOOLTIP_CLASS_NAME).forEach(tooltipEl => {
+    tooltipEl.remove();
+  });
+
+  // Finally, remove the dedicated style tag
+  const styleElement = document.getElementById(ARIA_ISSUE_STYLE_ID);
+  if (styleElement) {
+    styleElement.remove();
+  }
+  console.log('[A11y Panel] Cleared ARIA label issue highlights.');
 }
