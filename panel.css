@@ -65,12 +65,53 @@ button:hover {
   background-color: #3367d6;
 }
 
-.contrast-live-preview {
+.contrast-checker-outer {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
   transition: background 0.2s, color 0.2s;
   border-radius: 8px;
   padding: 20px 16px 16px 16px;
   margin-bottom: 20px;
+}  
+
+.contrast-checker-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 24px;
 }
+
+.contrast-checker-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  width: auto;
+}
+
+.contrast-color-input {
+  vertical-align: middle;
+  width: 100%;
+  height: 56px;
+  border: none;
+}
+
+.contrast-input-vertical {
+  vertical-align: middle;
+}
+
+.contrast-check-btn {
+  margin-top: 8px;
+}
+
+.contrast-result-msg {
+  margin-top: 10px;
+}
+
+
 .contrast-live-preview label,
 .contrast-live-preview h4 {
   color: inherit;

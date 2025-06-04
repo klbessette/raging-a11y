@@ -1631,23 +1631,33 @@ function showAllAltTextInPage() {
     const alt = img.getAttribute('alt');
     const overlay = document.createElement('span');
     overlay.className = 'alt-text-overlay';
-    overlay.textContent = alt ? `alt="${alt}"` : 'No alt text';
+    overlay.textContent = alt ? `"${alt}"` : '⚠️ No alt text';
+
+    // Style overlay (move to CSS if possible)
     overlay.style.position = 'absolute';
-    overlay.style.background = alt ? 'yellow' : 'red';
+    overlay.style.background = alt ? 'yellow' : '#df1c2f';
     overlay.style.color = alt ? 'black' : 'white';
     overlay.style.fontSize = '12px';
-    overlay.style.padding = '2px 4px';
-    overlay.style.zIndex = 10000;
+    overlay.style.fontWeight = '600';
+    overlay.style.padding = '6px';
+    overlay.style.borderRadius = '4px';
+    overlay.style.zIndex = 3;
     overlay.style.left = '0px';
     overlay.style.top = '0px';
     overlay.style.pointerEvents = 'none';
 
-    // Store original parent position if needed
     const parent = img.parentElement;
-    if (!parent.hasAttribute('data-original-position')) {
+
+    // Only set parent to relative if its position is static AND the image is not absolutely positioned
+    const parentStyle = getComputedStyle(parent);
+    const imgStyle = getComputedStyle(img);
+
+    if (
+      parentStyle.position === 'static' &&
+      imgStyle.position !== 'absolute' &&
+      imgStyle.position !== 'fixed'
+    ) {
       parent.setAttribute('data-original-position', parent.style.position || '');
-    }
-    if (getComputedStyle(parent).position === 'static') {
       parent.style.position = 'relative';
     }
 
@@ -1701,7 +1711,7 @@ function showHeadingOrderInPage() {
 
   headings.forEach((heading, idx) => {
     const level = Number(heading.tagName[1]);
-    let overlayColor = '#0074D9'; // normal
+    let overlayColor = '#FF00FF '; // normal
     let warningText = '';
 
     // Highlight multiple H1s
@@ -1759,10 +1769,10 @@ function showTabOrderInPage() {
         overlay.className = 'tab-order-overlay';
         overlay.textContent = idx + 1;
         overlay.style.position = 'absolute';
-        overlay.style.background = '#2ECC40';
+        overlay.style.background = '#FF00FF';
         overlay.style.color = 'white';
         overlay.style.fontSize = '13px';
-        overlay.style.fontWeight = 'bold';
+        overlay.style.fontWeight = '600';
         overlay.style.borderRadius = '50%';
         overlay.style.width = '22px';
         overlay.style.height = '22px';
@@ -1834,11 +1844,6 @@ function showFocusIndicatorsInPage() {
       outline-offset: 2px !important;
       box-shadow: 0 0 0 3px #FF00FF, 0 0 0 5px white !important; /* Ensure visibility on dark/light backgrounds */
     }
-    /* If you want to also style the actual :focus-visible state, you can add it here */
-    /* .${FOCUS_CLASS_NAME}:focus-visible {
-      outline: 3px solid #00FFFF !important; 
-      outline-offset: 2px !important;
-    } */
   `;
   document.head.appendChild(style);
 
@@ -2011,7 +2016,7 @@ function findAriaLabelIssuesInPage() {
   style.id = ARIA_ISSUE_STYLE_ID;
   style.textContent = `
     .${ARIA_ISSUE_CLASS_NAME} {
-      outline: 2px dashed purple !important;
+      outline: 3px dashed #FF00FF !important;
       outline-offset: 2px !important;
       position: relative; 
     }

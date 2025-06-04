@@ -293,9 +293,9 @@
               </label>
             </div>
           </div>
-          <div id="contrast-checker" class="contrast-live-preview" style="margin-top:20px; display: flex; flex-direction: column; align-items: center; width: 100%">
+          <div id="contrast-checker" class="contrast-live-preview contrast-checker-outer">
             <h4 class="contrast-header">WCAG 2.2 Contrast Checker</h4>
-            <div style="display: flex; justify-content: space-between; width: 100%; padding: 0 24px;">
+            <div class="contrast-checker-row">
             <label>
               <div
               style="
@@ -307,8 +307,8 @@
               "
             >
               Foreground Color:
-              <input type="color" id="contrast-fg" value="#222222" style="vertical-align: middle; width: 100%; height: 56px; border:none">
-              <input type="text" class="contrast-input" id="contrast-fg-text" value="#222222" size="8" maxlength="7" style="vertical-align:middle;">
+              <input type="color" id="contrast-fg" value="#222222" class="contrast-color-input">
+              <input type="text" class="contrast-input contrast-input-vertical" id="contrast-fg-text" value="#222222" size="8" maxlength="7">
             </div>
             </label>
             <br>
@@ -323,14 +323,14 @@
               "
             >
               Background Color:
-              <input type="color" id="contrast-bg" value="#ffffff" style="vertical-align: middle; width: 100%; height: 56px">
-              <input type="text" class="contrast-input" id="contrast-bg-text" value="#ffffff" size="8" maxlength="7" style="vertical-align:middle;">
+              <input type="color" id="contrast-bg" value="#ffffff" class="contrast-color-input">
+              <input type="text" class="contrast-input contrast-input-vertical" id="contrast-bg-text" value="#ffffff" size="8" maxlength="7">
             </div>
             </label>
             </div>
             <br>
-            <button id="contrast-check-btn" style="margin-top:8px;">Check Contrast</button>
-            <div id="contrast-result" style="margin-top:10px;"></div>
+            <button id="contrast-check-btn" class="contrast-check-btn">Check Contrast</button>
+            <div id="contrast-result" class="contrast-result-msg"></div>
           </div>
         </div>
       </div>
