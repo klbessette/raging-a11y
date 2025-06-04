@@ -132,14 +132,8 @@ if (fgColor && fgText && bgColor && bgText && checkBtn && resultDiv) {
     if (/^#[0-9a-fA-F]{6}$/.test(fg) && /^#[0-9a-fA-F]{6}$/.test(bg)) {
       const preview = document.getElementById('contrast-checker');
       if (preview) {
-        preview.style.background = bg;
-        preview.style.color = fg;
-        preview.querySelectorAll('input[type="text"], input[type="color"], button').forEach(el => {
-          el.style.color = fg;
-        });
-        preview.querySelectorAll('label, h4').forEach(el => {
-          el.style.color = fg;
-        });
+        preview.style.setProperty('--contrast-bg', bg);
+        preview.style.setProperty('--contrast-fg', fg);
       }
     }
   }
@@ -155,11 +149,11 @@ if (fgColor && fgText && bgColor && bgText && checkBtn && resultDiv) {
     const bg = bgText.value;
     const checked = getCheckedStandards();
     if (!/^#[0-9a-fA-F]{6}$/.test(fg) || !/^#[0-9a-fA-F]{6}$/.test(bg)) {
-      resultDiv.innerHTML = '<span style="color:red;">Please enter valid hex colors.</span>';
+      resultDiv.innerHTML = '<span class="contrast-error">Please enter valid hex colors.</span>';
       return;
     }
     if (checked.length === 0) {
-      resultDiv.innerHTML = '<span style="color:red;">Please select at least one WCAG standard.</span>';
+      resultDiv.innerHTML = '<span class="contrast-error">Please select at least one WCAG standard.</span>';
       return;
     }
     const ratio = contrastRatio(fg, bg);
@@ -172,19 +166,8 @@ if (fgColor && fgText && bgColor && bgText && checkBtn && resultDiv) {
         : '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false" pointer-events="none" class="_icon_lyt6s_1"><path fill="currentColor" d="M18.984 6.422 13.406 12l5.578 5.578-1.406 1.406L12 13.406l-5.578 5.578-1.406-1.406L10.594 12 5.016 6.422l1.406-1.406L12 10.594l5.578-5.578z"></path></svg>';
       const text = pass ? 'PASS' : 'FAIL';
       return `
-        <span style="
-          display:inline-flex;
-          align-items:center;
-          gap:4px;
-          padding:2px 10px 2px 7px;
-          border-radius:6px;
-          font-weight:600;
-          font-size:13px;
-          background:${fg};
-          color:${bg};
-          margin-top: 8px;
-        ">
-          <span style="font-size:15px;line-height:1;">${icon}</span> ${text}
+        <span class="pf-badge" style="--pf-bg:${fg};--pf-color:${bg};">
+          <span class="pf-icon">${icon}</span> ${text}
         </span>
       `;
     }
@@ -1391,8 +1374,7 @@ function highlightElement(target) {
       const previousHighlights = document.querySelectorAll('.raging-a11y-highlight');
       previousHighlights.forEach(el => {
         el.classList.remove('raging-a11y-highlight');
-        el.style.outline = '';
-        el.style.outlineOffset = '';
+        el.classList.remove('custom-highlight');
       });
       
       // Find and highlight the element
@@ -1404,8 +1386,7 @@ function highlightElement(target) {
         if (element) {
           console.log('[Raging A11y - Page Context] Element found and highlighted');
           element.classList.add('raging-a11y-highlight');
-          element.style.outline = '10px dashed #4285f4';
-          element.style.outlineOffset = '2px';
+          element.classList.add('custom-highlight');
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return true;
         } else {

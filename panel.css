@@ -343,6 +343,45 @@ button:hover {
   border-bottom: none;
 }
 
+.contrast-error {
+  color: red;
+  font-weight: 500;
+}
+
+.pf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px 2px 7px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: 8px;
+  background: var(--pf-bg, #eee);
+  color: var(--pf-color, #222);
+}
+.pf-badge .pf-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.custom-highlight {
+  outline: 10px dashed #4285f4 !important;
+  outline-offset: 2px !important;
+}
+
+#contrast-checker {
+  background: var(--contrast-bg, #fff) !important;
+  color: var(--contrast-fg, #222) !important;
+}
+#contrast-checker input[type="text"],
+#contrast-checker input[type="color"],
+#contrast-checker button,
+#contrast-checker label,
+#contrast-checker h4 {
+  color: var(--contrast-fg, #222) !important;
+}
+
 .issue-title {
   font-weight: 500;
   margin-bottom: 4px;
