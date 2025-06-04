@@ -58,18 +58,12 @@ const passesElementsList = document.getElementById("passes-elements-list");
 const severityItems = document.querySelectorAll(".severity-item");
 const tabButtons = document.querySelectorAll(".tab-button");
 const tabContents = document.querySelectorAll(".tab-content");
-const showAltTextBtn = document.getElementById("show-alt-text-btn");
-const hideAltTextBtn = document.getElementById("hide-alt-text-btn");
-const showHeadingOrderBtn = document.getElementById("show-heading-order-btn");
-const hideHeadingOrderBtn = document.getElementById("hide-heading-order-btn");
-const showTabOrderBtn = document.getElementById("show-tab-order-btn");
-const hideTabOrderBtn = document.getElementById("hide-tab-order-btn");
-const showFocusIndicatorsBtn = document.getElementById("show-focus-indicators-btn");
-const hideFocusIndicatorsBtn = document.getElementById("hide-focus-indicators-btn");
-const findGenericLinksBtn = document.getElementById("find-generic-links-btn");
-const clearGenericLinksBtn = document.getElementById("clear-generic-links-btn");
-const findAriaLabelIssuesBtn = document.getElementById("find-aria-label-issues-btn");
-const clearAriaLabelIssuesBtn = document.getElementById("clear-aria-label-issues-btn");
+const toggleAltText = document.getElementById("toggle-alt-text");
+const toggleHeadingOrder = document.getElementById("toggle-heading-order");
+const toggleTabOrder = document.getElementById("toggle-tab-order");
+const toggleFocusIndicators = document.getElementById("toggle-focus-indicators");
+const toggleGenericLinks = document.getElementById("toggle-generic-links");
+const toggleAriaLabelIssues = document.getElementById("toggle-aria-label-issues");
 
 function hexToRgb(hex) {
   hex = hex.replace(/^#/, '');
@@ -132,6 +126,28 @@ const standardLabels = {
 };
 
 if (fgColor && fgText && bgColor && bgText && checkBtn && resultDiv) {
+  function updateContrastPreview() {
+    const fg = fgText.value;
+    const bg = bgText.value;
+    if (/^#[0-9a-fA-F]{6}$/.test(fg) && /^#[0-9a-fA-F]{6}$/.test(bg)) {
+      const preview = document.getElementById('contrast-checker');
+      if (preview) {
+        preview.style.background = bg;
+        preview.style.color = fg;
+        preview.querySelectorAll('input[type="text"], input[type="color"], button').forEach(el => {
+          el.style.color = fg;
+        });
+        preview.querySelectorAll('label, h4').forEach(el => {
+          el.style.color = fg;
+        });
+      }
+    }
+  }
+  [fgColor, fgText, bgColor, bgText].forEach(input => {
+    input.addEventListener('input', updateContrastPreview);
+    input.addEventListener('change', updateContrastPreview);
+  });
+  updateContrastPreview();
   syncColorInputs(fgColor, fgText);
   syncColorInputs(bgColor, bgText);
   checkBtn.addEventListener('click', () => {
@@ -149,16 +165,50 @@ if (fgColor && fgText && bgColor && bgText && checkBtn && resultDiv) {
     const ratio = contrastRatio(fg, bg);
     const normal = wcagResult(ratio, 'normal');
     const large = wcagResult(ratio, 'large');
+    // Helper for pass/fail container
+    function pfContainer(pass, fg, bg, label) {
+      const icon = pass
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false" pointer-events="none" class="_icon_lyt6s_1"><path fill="currentColor" d="M9 16.172 19.594 5.578 21 6.984l-12 12-5.578-5.578L4.828 12z"></path></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false" pointer-events="none" class="_icon_lyt6s_1"><path fill="currentColor" d="M18.984 6.422 13.406 12l5.578 5.578-1.406 1.406L12 13.406l-5.578 5.578-1.406-1.406L10.594 12 5.016 6.422l1.406-1.406L12 10.594l5.578-5.578z"></path></svg>';
+      const text = pass ? 'PASS' : 'FAIL';
+      return `
+        <span style="
+          display:inline-flex;
+          align-items:center;
+          gap:4px;
+          padding:2px 10px 2px 7px;
+          border-radius:6px;
+          font-weight:600;
+          font-size:13px;
+          background:${fg};
+          color:${bg};
+          margin-top: 8px;
+        ">
+          <span style="font-size:15px;line-height:1;">${icon}</span> ${text}
+        </span>
+      `;
+    }
+
     resultDiv.innerHTML = `
-      <div style="margin-bottom:4px;">
-        <span style="background:${bg};color:${fg};padding:2px 8px;border-radius:3px;">Sample Text</span>
-      </div>
+    <div class="contrast-results-container">
       <strong>Contrast Ratio:</strong> ${ratio.toFixed(2)}:1<br>
-      <strong>AA</strong> (normal): <span style="color:${normal.aa ? 'green':'red'}">${normal.aa ? 'PASS':'FAIL'}</span><br>
-      <strong>AA</strong> (large): <span style="color:${large.aa ? 'green':'red'}">${large.aa ? 'PASS':'FAIL'}</span><br>
-      <strong>AAA</strong> (normal): <span style="color:${normal.aaa ? 'green':'red'}">${normal.aaa ? 'PASS':'FAIL'}</span><br>
-      <strong>AAA</strong> (large): <span style="color:${large.aaa ? 'green':'red'}">${large.aaa ? 'PASS':'FAIL'}</span>
+      <div class="contrast-results">
+        <div class="contrast-result">
+          <strong>AA</strong> (normal): ${pfContainer(normal.aa, fg, bg, 'AA normal')}<br>
+        </div>
+        <div class="contrast-result">
+          <strong>AA</strong> (large): ${pfContainer(large.aa, fg, bg, 'AA large')}<br>
+        </div>
+        <div class="contrast-result">
+          <strong>AAA</strong> (normal): ${pfContainer(normal.aaa, fg, bg, 'AAA normal')}<br>
+        </div>
+        <div class="contrast-result">
+          <strong>AAA</strong> (large): ${pfContainer(large.aaa, fg, bg, 'AAA large')}
+        </div>
+      </div>
+    </div>
     `;
+
   });
 }
 
@@ -236,91 +286,69 @@ function initEventListeners() {
   });
   console.log("[Raging A11y] Event listeners initialized");
 
-  if (showAltTextBtn) {
-    showAltTextBtn.addEventListener('click', () => {
-      chrome.devtools.inspectedWindow.eval('(' + showAllAltTextInPage.toString() + ')()');
-    });
-  }
-  if (hideAltTextBtn) {
-    hideAltTextBtn.addEventListener('click', () => {
-      chrome.devtools.inspectedWindow.eval('(' + hideAllAltTextInPage.toString() + ')()');
-    });
-  }
-  if (showHeadingOrderBtn) {
-    showHeadingOrderBtn.addEventListener('click', () => {
-      chrome.devtools.inspectedWindow.eval('(' + showHeadingOrderInPage.toString() + ')()');
-    });
-  }
-  if (hideHeadingOrderBtn) {
-    hideHeadingOrderBtn.addEventListener('click', () => {
-      chrome.devtools.inspectedWindow.eval('(' + hideHeadingOrderInPage.toString() + ')()');
-    });
-  }
-  if (showTabOrderBtn) {
-    showTabOrderBtn.addEventListener('click', () => {
-      chrome.devtools.inspectedWindow.eval('(' + showTabOrderInPage.toString() + ')()');
-    });
-  }
-  if (hideTabOrderBtn) {
-    hideTabOrderBtn.addEventListener("click", () => {
-      chrome.devtools.inspectedWindow.eval(
-        `(${hideTabOrderInPage.toString()})();`,
-        { useContentScriptContext: true }
-      );
+  // Alt Text Toggle
+  if (toggleAltText) {
+    toggleAltText.addEventListener('change', () => {
+      if (toggleAltText.checked) {
+        chrome.devtools.inspectedWindow.eval('(' + showAllAltTextInPage.toString() + ')()');
+      } else {
+        chrome.devtools.inspectedWindow.eval('(' + hideAllAltTextInPage.toString() + ')()');
+      }
     });
   }
 
-  if (showFocusIndicatorsBtn) {
-    showFocusIndicatorsBtn.addEventListener("click", () => {
-      chrome.devtools.inspectedWindow.eval(
-        `(${showFocusIndicatorsInPage.toString()})();`,
-        { useContentScriptContext: true }
-      );
+  // Heading Order Toggle
+  if (toggleHeadingOrder) {
+    toggleHeadingOrder.addEventListener('change', () => {
+      if (toggleHeadingOrder.checked) {
+        chrome.devtools.inspectedWindow.eval('(' + showHeadingOrderInPage.toString() + ')()');
+      } else {
+        chrome.devtools.inspectedWindow.eval('(' + hideHeadingOrderInPage.toString() + ')()');
+      }
     });
   }
 
-  if (hideFocusIndicatorsBtn) {
-    hideFocusIndicatorsBtn.addEventListener("click", () => {
-      chrome.devtools.inspectedWindow.eval(
-        `(${hideFocusIndicatorsInPage.toString()})();`,
-        { useContentScriptContext: true }
-      );
+  // Tab Order Toggle
+  if (toggleTabOrder) {
+    toggleTabOrder.addEventListener('change', () => {
+      if (toggleTabOrder.checked) {
+        chrome.devtools.inspectedWindow.eval('(' + showTabOrderInPage.toString() + ')()');
+      } else {
+        chrome.devtools.inspectedWindow.eval(`(${hideTabOrderInPage.toString()})();`, { useContentScriptContext: true });
+      }
     });
   }
 
-  if (findGenericLinksBtn) {
-    findGenericLinksBtn.addEventListener("click", () => {
-      chrome.devtools.inspectedWindow.eval(
-        `(${findGenericLinksInPage.toString()})();`,
-        { useContentScriptContext: true }
-      );
+  // Focus Indicators Toggle
+  if (toggleFocusIndicators) {
+    toggleFocusIndicators.addEventListener('change', () => {
+      if (toggleFocusIndicators.checked) {
+        chrome.devtools.inspectedWindow.eval(`(${showFocusIndicatorsInPage.toString()})();`, { useContentScriptContext: true });
+      } else {
+        chrome.devtools.inspectedWindow.eval(`(${hideFocusIndicatorsInPage.toString()})();`, { useContentScriptContext: true });
+      }
     });
   }
 
-  if (clearGenericLinksBtn) {
-    clearGenericLinksBtn.addEventListener("click", () => {
-      chrome.devtools.inspectedWindow.eval(
-        `(${clearGenericLinkHighlightsInPage.toString()})();`,
-        { useContentScriptContext: true }
-      );
+  // Generic Links Toggle
+  if (toggleGenericLinks) {
+    toggleGenericLinks.addEventListener('change', () => {
+      if (toggleGenericLinks.checked) {
+        chrome.devtools.inspectedWindow.eval(`(${findGenericLinksInPage.toString()})();`, { useContentScriptContext: true });
+      } else {
+        chrome.devtools.inspectedWindow.eval(`(${clearGenericLinkHighlightsInPage.toString()})();`, { useContentScriptContext: true });
+      }
     });
   }
 
-  if (findAriaLabelIssuesBtn) {
-    findAriaLabelIssuesBtn.addEventListener("click", () => {
-      chrome.devtools.inspectedWindow.eval(
-        `(${findAriaLabelIssuesInPage.toString()})();`,
-        { useContentScriptContext: true }
-      );
-    });
-  }
-
-  if (clearAriaLabelIssuesBtn) {
-    clearAriaLabelIssuesBtn.addEventListener("click", () => {
-      chrome.devtools.inspectedWindow.eval(
-        `(${clearAriaLabelIssuesHighlightsInPage.toString()})();`,
-        { useContentScriptContext: true }
-      );
+  // ARIA Label Issues Toggle
+  if (toggleAriaLabelIssues) {
+    toggleAriaLabelIssues.addEventListener('change', () => {
+      if (toggleAriaLabelIssues.checked) {
+        chrome.devtools.inspectedWindow.eval(`(${findAriaLabelIssuesInPage.toString()})();`, { useContentScriptContext: true });
+      } else {
+        chrome.devtools.inspectedWindow.eval(`(${clearAriaLabelIssuesHighlightsInPage.toString()})();`, { useContentScriptContext: true });
+      }
     });
   }
 }
