@@ -1027,7 +1027,7 @@ function showIssuesForSeverity(severity) {
       issueLink.href = issue.helpUrl;
       issueLink.target = "_blank";
       issueLink.rel = "noopener noreferrer";
-      issueLink.textContent = "More info";
+      issueLink.textContent = "View Issue";
       issueItem.appendChild(issueLink);
     }
 
@@ -1146,7 +1146,7 @@ function showIncompleteIssuesForSeverity(severity) {
       issueLink.href = issue.helpUrl;
       issueLink.target = "_blank";
       issueLink.rel = "noopener noreferrer";
-      issueLink.textContent = "More info";
+      issueLink.textContent = "View Issue ";
       issueItem.appendChild(issueLink);
     }
 
@@ -1258,7 +1258,7 @@ function showPassesForSeverity(severity) {
       issueLink.href = issue.helpUrl;
       issueLink.target = "_blank";
       issueLink.rel = "noopener noreferrer";
-      issueLink.textContent = "More info";
+      issueLink.textContent = "View Issue";
       issueItem.appendChild(issueLink);
     }
 
