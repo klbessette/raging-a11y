@@ -48,6 +48,7 @@ const activeStandards = document.getElementById("active-standards");
 const standardsTagsContainer = activeStandards.querySelector(".standards-tags");
 const loadingIndicator = document.getElementById("loading");
 const issuesList = document.getElementById("issues-list");
+
 const elementsList = document.getElementById("elements-list");
 const incompleteIssuesList = document.getElementById("incomplete-issues-list");
 const incompleteElementsList = document.getElementById(
